@@ -1,0 +1,115 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: clanai-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: clanai
+      POSTGRES_PASSWORD: clanai
+      POSTGRES_DB: clanai
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clanai -d clanai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - clanai-net
+
+  intentusnet:
+    image: intentusnet/engine:latest
+    container_name: clanai-intentusnet
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      LOG_LEVEL: INFO
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - clanai-net
+
+  migrations:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clanai-migrations
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://clanai:clanai@db:5432/clanai
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - clanai-net
+    restart: on-failure
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clanai-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://clanai:clanai@db:5432/clanai
+      INTENTUSNET_BASE_URL: http://intentusnet:8001
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+      ALLOWED_ORIGINS: '["http://localhost:3000","http://ui:3000"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - clanai-net
+
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: clanai-ui
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - clanai-net
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  clanai-net:
+    driver: bridge
