@@ -1,0 +1,169 @@
+{
+  "_description": "Example execution payload and response for the research-clan-alpha running a literature review task",
+  "request": {
+    "task": "Conduct a systematic literature review on transformer architectures for multi-agent coordination",
+    "inputs": {
+      "topic": "transformer architectures for multi-agent coordination",
+      "year_range": [2020, 2024],
+      "max_papers": 50,
+      "output_format": "structured_report"
+    },
+    "override_governance": {}
+  },
+  "response": {
+    "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "clan_id": "3e4a6b2c-1234-5678-abcd-ef0123456789",
+    "task": "Conduct a systematic literature review on transformer architectures for multi-agent coordination",
+    "task_inputs": {
+      "topic": "transformer architectures for multi-agent coordination",
+      "year_range": [2020, 2024],
+      "max_papers": 50,
+      "output_format": "structured_report"
+    },
+    "status": "completed",
+    "execution_hash": "a3f8b2c9d1e4f7a0b3c6d9e2f5a8b1c4d7e0f3a6b9c2d5e8f1a4b7c0d3e6f9a2",
+    "dag": {
+      "nodes": [
+        {
+          "node_id": "node-orchestrate",
+          "agent_id": "orchestrator-1",
+          "task_name": "plan_research_tasks",
+          "status": "completed",
+          "inputs": {
+            "topic": "transformer architectures for multi-agent coordination",
+            "max_papers": 50
+          },
+          "outputs": {
+            "sub_tasks": ["search_arxiv", "search_pubmed", "analyze_papers", "synthesize", "validate"],
+            "execution_plan": "parallel_search_then_sequential_analysis"
+          },
+          "duration_ms": 1240,
+          "dependencies": []
+        },
+        {
+          "node_id": "node-search-arxiv",
+          "agent_id": "searcher-1",
+          "task_name": "search_arxiv",
+          "status": "completed",
+          "inputs": {
+            "source": "arxiv",
+            "query": "transformer multi-agent coordination",
+            "max_results": 25
+          },
+          "outputs": {
+            "papers": 23,
+            "top_papers": ["2301.12345", "2302.67890", "2303.11111"]
+          },
+          "duration_ms": 3850,
+          "dependencies": ["node-orchestrate"]
+        },
+        {
+          "node_id": "node-search-pubmed",
+          "agent_id": "searcher-1",
+          "task_name": "search_pubmed",
+          "status": "completed",
+          "inputs": {
+            "source": "pubmed",
+            "query": "transformer neural multi-agent",
+            "max_results": 25
+          },
+          "outputs": {
+            "papers": 11,
+            "top_papers": ["PMC9876543", "PMC8765432"]
+          },
+          "duration_ms": 2910,
+          "dependencies": ["node-orchestrate"]
+        },
+        {
+          "node_id": "node-analyze",
+          "agent_id": "analyzer-1",
+          "task_name": "analyze_papers",
+          "status": "completed",
+          "inputs": {
+            "paper_ids": ["2301.12345", "2302.67890", "2303.11111", "PMC9876543"],
+            "extraction_fields": ["methodology", "results", "limitations"]
+          },
+          "outputs": {
+            "analyses": 4,
+            "key_themes": ["attention mechanisms", "decentralized coordination", "emergent behavior"],
+            "avg_citation_count": 47.5
+          },
+          "duration_ms": 8420,
+          "dependencies": ["node-search-arxiv", "node-search-pubmed"]
+        },
+        {
+          "node_id": "node-synthesize",
+          "agent_id": "synthesizer-1",
+          "task_name": "synthesize_report",
+          "status": "completed",
+          "inputs": {
+            "analyses": 4,
+            "format": "structured_report"
+          },
+          "outputs": {
+            "word_count": 3240,
+            "sections": ["abstract", "methodology_survey", "results_comparison", "future_directions"],
+            "citations": 34
+          },
+          "duration_ms": 12100,
+          "dependencies": ["node-analyze"]
+        },
+        {
+          "node_id": "node-validate",
+          "agent_id": "validator-1",
+          "task_name": "validate_report",
+          "status": "completed",
+          "inputs": {
+            "report_word_count": 3240,
+            "citations": 34
+          },
+          "outputs": {
+            "quality_score": 0.91,
+            "factual_accuracy": 0.94,
+            "citation_validity": 0.89,
+            "coherence": 0.93,
+            "passed": true
+          },
+          "duration_ms": 4650,
+          "dependencies": ["node-synthesize"]
+        }
+      ],
+      "edges": [
+        ["node-orchestrate", "node-search-arxiv"],
+        ["node-orchestrate", "node-search-pubmed"],
+        ["node-search-arxiv", "node-analyze"],
+        ["node-search-pubmed", "node-analyze"],
+        ["node-analyze", "node-synthesize"],
+        ["node-synthesize", "node-validate"]
+      ],
+      "metadata": {
+        "intentusnet_execution_id": "int-exec-a1b2c3d4",
+        "parallel_groups": 2,
+        "total_wall_time_ms": 33170
+      }
+    },
+    "started_at": "2025-01-15T10:30:00Z",
+    "completed_at": "2025-01-15T10:30:33Z",
+    "error_message": null,
+    "error_class": null,
+    "retry_count": 0,
+    "determinism_verified": true,
+    "metadata_record": {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "execution_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "inputs": {
+        "topic": "transformer architectures for multi-agent coordination",
+        "year_range": [2020, 2024],
+        "max_papers": 50
+      },
+      "outputs": {
+        "quality_score": 0.91,
+        "passed": true,
+        "report_sections": ["abstract", "methodology_survey", "results_comparison", "future_directions"]
+      },
+      "duration_ms": 33170,
+      "node_count": 6,
+      "determinism_verified": true
+    }
+  }
+}
